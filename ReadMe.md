@@ -118,9 +118,15 @@ yield 并不能使使一个函数获得异步效果，他的作用仅仅是标�
 
 co 是基于 Generator 的控制流，让你写出非 blocking 的漂亮的代码。
 
+通过 co 可以按顺序执行 `function*` 内所有的 yield。
+
 KOA 的 generator 与常规的用法不同就是因为使用了 co。
 
-通过 co 可以按顺序执行 `function*` 内所有的 yield
+## co 实现原理和注释
+
+内容来源：http://book.apebook.org/minghe/koa-action/co/co.html
+
+注释代码：https://github.com/Humyang/learn_koa
 
 ## co 返回值
 
@@ -137,8 +143,6 @@ co(function* () {
 });
 ```
 
-
-
 ## Thunks 函数
 
 CO 支持传入 Thunk ，那什么是 Thunk？
@@ -147,8 +151,31 @@ Thunks are functions that only have a single argument, a callback. Thunk support
 
 Thunk 是只有单独的参数和一个回调方法的函数。Thunk 的支持是为了向前兼容可能会在未来的 co 版本移除。
 
-## co 的实现
+## Thunk 与 Promise 对比
 
+co 的功能其实就是自动顺序执行 generator function 内所有 yield，就版本的实现方式通过将 yield 后面的操作封装成 thunk，例如：
+
+```javascript
+
+function read(file){
+    return function(fn){
+        fs.readFile(file,'utf-8',fn);
+    }
+}
+
+```
+
+文件读取完后立刻执行 fn，co 将内部封装的 `_next()` 方法传递给 read 返回的 function，即 fn。通过这样的方式执行 generator function 内所有的 yield，直到结束。
+
+4.0 的 co 使用 Promise 替代 thunk，仍然可以使用 thunk 仅仅为了支持旧版本。
+
+Promise 的实现：
+
+```javascript
+
+var promise = new P
+
+```
 
 
 ## co 的简单实用

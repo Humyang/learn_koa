@@ -15,16 +15,21 @@ function co(fn){
 
         // 用于保存 fn 内 yeild 返回的数据。
         var it = null;
+        //在这个例子中,readFile读取完成，回调_next,err和data值由 readfile 的 callback 传入
+        function _next(err,data){
 
-        function _next(err,res){
-            if(err)res=err;
+            if(err)data=err;
             // 调用 next 使 generator 实例执行下一步
+            // next 的返回值为 {value:yield表达式,done:false|true}
+
             // 因为这里传入了 res 到 next，所以当前 yeild 返回的值就变成了 res
-            // 所以传入给 co 的函数内，var a = yeild readFile('file')，得到的值是读取文件后的值
+            // 所以传入给 co 的函数内，var a = yeild readFile('file')，a 得到的值是读取文件后的值
             // 而不是 readFile 返回的函数
             // 这段代码很妙。
-            it = gen.next(res);
-
+            // it = {value:function(fn){ds.readFile()},done:false}
+            // gen 是被闭包了，所以总是只想 fn.call。
+            it = gen.next(data);
+            console.log(it);
             // 如果未执行完成，把 _next 作为参数传递带 it.value
             // 因为 readFile 返回的是函数，并且需要一个函数类型的参数
             // 所以此时 it.value 是函数，需要一个函数类型的参数
@@ -58,7 +63,7 @@ function read(file){
 co(function* (){
     var c = 2;
     console.log(c);
-
+    // a 的值通过 next(res) 传入
     var a = yield read('_simple_co.js');
     console.log(a.length);
 
